@@ -1,36 +1,24 @@
-const express = require("express");
-const fetch = require("node-fetch");
-const cors = require("cors");
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-app.use(express.static("public"));
-
-// プロキシ用エンドポイント
 app.post("/proxy", async (req, res) => {
   const { url } = req.body;
   if (!url) {
     return res.status(400).json({ error: "URLがありません" });
   }
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    return res.status(400).json({ error: "無効なURLです" });
+  }
 
   try {
-    // 外部サイトのHTMLを取得
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; RenderProxy/1.0)" },
+    });
     if (!response.ok) {
-      return res.status(500).json({ error: "外部サイトの取得に失敗しました" });
+      return res.status(500).json({ error: `外部サイトの取得に失敗しました: ${response.status}` });
     }
     const body = await response.text();
-
-    // そのまま返す（Content-Typeは元のページのものをそのまま使うと良い）
     res.set("Content-Type", response.headers.get("content-type") || "text/html");
     res.send(body);
   } catch (e) {
+    console.error("Fetch error:", e);
     res.status(500).json({ error: "取得中にエラーが発生しました" });
   }
-});
-
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Proxy server running on port ${port}`);
 });
