@@ -1,3 +1,13 @@
+const express = require("express");
+const fetch = require("node-fetch");
+const cors = require("cors");
+
+const app = express();
+
+app.use(cors());
+app.use(express.json());
+app.use(express.static("public"));
+
 app.post("/proxy", async (req, res) => {
   const { url } = req.body;
   if (!url) {
@@ -21,4 +31,9 @@ app.post("/proxy", async (req, res) => {
     console.error("Fetch error:", e);
     res.status(500).json({ error: "取得中にエラーが発生しました" });
   }
+});
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Proxy server running on port ${port}`);
 });
