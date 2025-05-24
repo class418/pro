@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simple Proxy</title>
+</head>
+<body>
+  <input type="text" id="urlInput" placeholder="表示したいページのURLを入力" style="width: 400px;">
+  <button onclick="loadPage()">表示</button>
+
+  <div id="result" style="margin-top: 20px; border: 1px solid #ccc; padding: 10px;">
+    <!-- ここに外部サイトのHTMLが表示される -->
+  </div>
+
+  <script>
+    async function loadPage() {
+      const url = document.getElementById("urlInput").value.trim();
+      if (!url) {
+        alert("URLを入力してください");
+        return;
+      }
+
+      const res = await fetch("/proxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!res.ok) {
+        alert("ページの取得に失敗しました");
+        return;
+      }
+
+      const html = await res.text();
+      document.getElementById("result").innerHTML = html;
+    }
+  </script>
+</body>
+</html>
